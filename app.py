@@ -10,7 +10,7 @@ st.set_page_config(page_title="Sportka AI Analytik PRO", layout="wide")
 # --- STYLING (Vynucení bílého písma a kontrastu) ---
 st.markdown("""
     <style>
-    div.stAlert p { color: #FFFFFF !important; font-weight: bold; }
+    div.stAlert p { color: #000000 !important; font-weight: bold; }
     [data-testid="stMetricValue"] { color: #FF4B4B; }
     .stMetric { 
         background-color: rgba(255, 75, 75, 0.05); 
@@ -163,4 +163,5 @@ if data is not None:
             r5.metric("5. pořadí", vysledky["p5"])
             st.info(f"Celkem výher v historii od r. {min_rok}: **{sum(vysledky.values())}x**")
 else:
+
     st.error("Nepodařilo se načíst data.")
