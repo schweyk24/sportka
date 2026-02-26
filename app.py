@@ -108,9 +108,9 @@ if data is not None:
                 counts_all = pd.Series(vsechna).value_counts()
                 
                 # Vytvoříme váhy: Čísla, která nepadla, dostanou minimální váhu
-                weights = np.array([counts_all.get(c, 0.1) for c in vsechna_mozna])
-                weights = weights**2  # Umocnění zvýrazní rozdíly mezi "horkými" a "studenými" čísly
-                weights /= weights.sum()
+               weights = np.array([counts_all.get(c, 0.1) for c in vsechna_mozna], dtype=float)
+weights = weights**2 
+weights /= weights.sum()
 
                 cols = st.columns(4)
                 
@@ -209,4 +209,5 @@ if data is not None:
 else:
 
     st.error("Nepodařilo se načíst data.")
+
 
