@@ -98,19 +98,63 @@ if data is not None:
                 st.table(top)
 
     with tab2:
-        st.subheader("Generátor na základě historie týdne")
-        if st.button("🚀 GENEROVAT 8 TIKETŮ"):
+        st.subheader("🔮 Generátor historicky nejúspěšnějších kombinací")
+        st.write("Tento algoritmus kombinuje nejčastěji losovaná čísla a ověřuje jejich historickou úspěšnost.")
+        
+        if st.button("🚀 GENEROVAT 8 TOP TIKETŮ"):
             if len(vsechna) > 0:
+                # 1. Příprava vah na základě četnosti (čím častější, tím vyšší váha)
                 vsechna_mozna = np.arange(1, 50)
-                counts_all = pd.Series(vsechna).value_counts(normalize=True)
-                weights = np.array([counts_all.get(c, 0.005) for c in vsechna_mozna])
+                counts_all = pd.Series(vsechna).value_counts()
+                
+                # Vytvoříme váhy: Čísla, která nepadla, dostanou minimální váhu
+                weights = np.array([counts_all.get(c, 0.1) for c in vsechna_mozna])
+                weights = weights**2  # Umocnění zvýrazní rozdíly mezi "horkými" a "studenými" čísly
                 weights /= weights.sum()
 
                 cols = st.columns(4)
+                
                 for i in range(8):
+                    # Generování tipu na základě vah
                     tip = sorted(np.random.choice(vsechna_mozna, size=6, replace=False, p=weights))
-                    cols[i % 4].success(f"**TIKET {i+1}**\n\n{', '.join(map(str, tip))}")
+                    s_tip = set(tip)
+                    
+                    # --- ANALÝZA HISTORIE PRO TENTO KONKRÉTNÍ TIKET ---
+                    vysledky_tiketu = {"p1": 0, "p2": 0, "p3": 0, "p4": 0, "p5": 0}
+                    
+                    for _, radek in data.iterrows():
+                        for t_cols, d_col in [(tah1_cols, dt1_col), (tah2_cols, dt2_col)]:
+                            try:
+                                taz = set(radek[t_cols].dropna().astype(int))
+                                if not taz: continue
+                                
+                                shoda = len(s_tip & taz)
+                                dod = int(radek[d_col])
+                                
+                                if shoda == 6: vysledky_tiketu["p1"] += 1
+                                elif shoda == 5 and dod in s_tip: vysledky_tiketu["p2"] += 1
+                                elif shoda == 5: vysledky_tiketu["p3"] += 1
+                                elif shoda == 4: vysledky_tiketu["p4"] += 1
+                                elif shoda == 3: vysledky_tiketu["p5"] += 1
+                            except: continue
+                    
+                    # --- VÝPIS TIKETU ---
+                    celkem_vyher = sum(vysledky_tiketu.values())
+                    with cols[i % 4]:
+                        st.success(f"**TIKET {i+1}**\n\n{', '.join(map(str, tip))}")
+                        # Zobrazení detailů výher pod tiketem malým písmem
+                        st.caption(f"🏆 Celkem výher: **{celkem_vyher}x**")
+                        exp = st.expander("Detail pořadí")
+                        with exp:
+                            st.write(f"1. pořadí: {vysledky_tiketu['p1']}x")
+                            st.write(f"2. pořadí: {vysledky_tiketu['p2']}x")
+                            st.write(f"3. pořadí: {vysledky_tiketu['p3']}x")
+                            st.write(f"4. pořadí: {vysledky_tiketu['p4']}x")
+                            st.write(f"5. pořadí: {vysledky_tiketu['p5']}x")
+                
                 st.balloons()
+            else:
+                st.warning("Nedostatek dat pro analýzu. Upravte filtr let v levém panelu.")
 
     with tab3:
         st.subheader("⚖️ Virtuální tiket (7x7)")
@@ -165,3 +209,4 @@ if data is not None:
 else:
 
     st.error("Nepodařilo se načíst data.")
+
